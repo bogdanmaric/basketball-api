@@ -1,8 +1,6 @@
 package com.fiba.basketballapi.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +17,34 @@ public class StandardStats {
     private int freeThrowAttempted;
     @Getter
     @Setter
-    @OneToOne(mappedBy = "standardStats")
-    private PlayerStats player;
+    private int twoPointsMade;
+    @Getter
+    @Setter
+    private int twoPointsAttempted;
+    @Getter
+    @Setter
+    private int threePointsMade;
+    @Getter
+    @Setter
+    private int threePointsAttempted;
+    @Getter
+    @Setter
+    private int rebounds;
+    @Getter
+    @Setter
+    private int blocks;
+    @Getter
+    @Setter
+    private int assists;
+    @Getter
+    @Setter
+    private int steals;
+    @Getter
+    @Setter
+    private int turnovers;
+    @Getter
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "player_id")
+    private Player player;
 }
