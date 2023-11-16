@@ -74,7 +74,7 @@ Tehnologije koje su korišćene u projektu su:
 # Korišćenje
 
 - Pokrenuti aplikaciju, kako bi učitala sve statističke podatke igrača iz csv fajla i unela u H2 bazu podataka.
-- U pregledaču upisati putanju: http://localhost:8080/api/v1/player/{ime_igrača}. Umesto {ime_igrača} napisati naziv igrača, na primer:
+- U pregledaču upisati putanju: `http://localhost:8080/api/v1/player/{ime_igrača}`. Umesto {ime_igrača} napisati naziv igrača, na primer:
   `http://localhost:8080/api/v1/player/Luyanda%20Yohance`
 - Nakon potvrde putanje, dobijamo odgovor u json formatu.
 
