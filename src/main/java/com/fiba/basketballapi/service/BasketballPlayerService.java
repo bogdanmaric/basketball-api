@@ -21,12 +21,17 @@ import java.util.*;
 public class BasketballPlayerService {
 
     private PlayerRespository playerRespository;
+    private StatsService statsService;
     @Value("${file.path}")
     private String path;
 
     @Autowired
-    public BasketballPlayerService(PlayerRespository playerRespository) {
+    public BasketballPlayerService(
+            PlayerRespository playerRespository,
+            StatsService statsService
+    ) {
         this.playerRespository = playerRespository;
+        this.statsService = statsService;
     }
 
     public Player savePlayer(Player playerStats) {
@@ -35,47 +40,48 @@ public class BasketballPlayerService {
     public JsonObject calculatePlayerStats(String name) {
         Optional<Player> player = playerRespository.findPlayerByName(name);
         List<StandardStats> standardStatsList = player.get().getStandardStats();
-        return buildJsonResponse(standardStatsList, player.get());
+        statsService.setStandardStatsList(standardStatsList);
+        return buildJsonResponse(player.get());
     }
 
-    public JsonObject buildJsonResponse(List<StandardStats> standardStatsList, Player player) {
+    public JsonObject buildJsonResponse(Player player) {
         JsonObjectBuilder freeThrowsBuilder  = Json.createObjectBuilder()
-                .add("attempts", roundToOneDecimal(avgFreeThrowAttempted(standardStatsList)))
-                .add("made", roundToOneDecimal(avgFreeThrowMade(standardStatsList)))
-                .add("shootingPercentage", roundToOneDecimal(freeThrowPercentage(standardStatsList)));
+                .add("attempts", roundToOneDecimal(statsService.avgFreeThrowAttempted()))
+                .add("made", roundToOneDecimal(statsService.avgFreeThrowMade()))
+                .add("shootingPercentage", roundToOneDecimal(statsService.freeThrowPercentage()));
 
         JsonObjectBuilder twoPointsBuilder = Json.createObjectBuilder()
-                .add("attempts", roundToOneDecimal(avgTwoPointsAttempted(standardStatsList)))
-                .add("made", roundToOneDecimal(avgTwoPointsMade(standardStatsList)))
-                .add("shootingPercentage", roundToOneDecimal(twoPointsPercentage(standardStatsList)));
+                .add("attempts", roundToOneDecimal(statsService.avgTwoPointsAttempted()))
+                .add("made", roundToOneDecimal(statsService.avgTwoPointsMade()))
+                .add("shootingPercentage", roundToOneDecimal(statsService.twoPointsPercentage()));
 
         JsonObjectBuilder threePointsBuilder = Json.createObjectBuilder()
-                .add("attempts", roundToOneDecimal(avgThreePointsAttempted(standardStatsList)))
-                .add("made", roundToOneDecimal(avgThreePointsMade(standardStatsList)))
-                .add("shootingPercentage", roundToOneDecimal(threePointsPercentage(standardStatsList)));
+                .add("attempts", roundToOneDecimal(statsService.avgThreePointsAttempted()))
+                .add("made", roundToOneDecimal(statsService.avgThreePointsMade()))
+                .add("shootingPercentage", roundToOneDecimal(statsService.threePointsPercentage()));
 
         JsonObject traditionalStats = Json.createObjectBuilder()
                 .add("freeThrows", freeThrowsBuilder)
                 .add("twoPoints", twoPointsBuilder)
                 .add("threePoints", threePointsBuilder)
-                .add("points", roundToOneDecimal(points(standardStatsList)))
-                .add("rebounds", roundToOneDecimal(avgRebounds(standardStatsList)))
-                .add("blocks", roundToOneDecimal(avgBlocks(standardStatsList)))
-                .add("assists", roundToOneDecimal(avgAssists(standardStatsList)))
-                .add("steals", roundToOneDecimal(avgSteals(standardStatsList)))
-                .add("turnovers", roundToOneDecimal(avgTurnovers(standardStatsList)))
+                .add("points", roundToOneDecimal(statsService.points()))
+                .add("rebounds", roundToOneDecimal(statsService.avgRebounds()))
+                .add("blocks", roundToOneDecimal(statsService.avgBlocks()))
+                .add("assists", roundToOneDecimal(statsService.avgAssists()))
+                .add("steals", roundToOneDecimal(statsService.avgSteals()))
+                .add("turnovers", roundToOneDecimal(statsService.avgTurnovers()))
                 .build();
 
         JsonObject advancedStats = Json.createObjectBuilder()
-                .add("valorization", roundToOneDecimal(volarization(standardStatsList)))
-                .add("effectiveFieldGoalPercentage", roundToOneDecimal(effectiveFieldGoalPercentage(standardStatsList)))
-                .add("trueShootingPercentage", roundToOneDecimal(trueShootingPercentage(standardStatsList)))
-                .add("hollingerAssistRatio", roundToOneDecimal(hollingerAssistRatio(standardStatsList)))
+                .add("valorization", roundToOneDecimal(statsService.volarization()))
+                .add("effectiveFieldGoalPercentage", roundToOneDecimal(statsService.effectiveFieldGoalPercentage()))
+                .add("trueShootingPercentage", roundToOneDecimal(statsService.trueShootingPercentage()))
+                .add("hollingerAssistRatio", roundToOneDecimal(statsService.hollingerAssistRatio()))
                 .build();
 
         JsonObject playerStats = Json.createObjectBuilder()
                 .add("playerName", player.getName())
-                .add("gamesPlayed", standardStatsList.size())
+                .add("gamesPlayed", statsService.getStandardStatsList().size())
                 .add("traditional", traditionalStats)
                 .add("advanced", advancedStats)
                 .build();
@@ -86,157 +92,6 @@ public class BasketballPlayerService {
     public double roundToOneDecimal(double number) {
         return Math.round(number * 10.0) / 10.0;
     }
-
-    public double avgFreeThrowMade(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getFreeThrowMade();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgFreeThrowAttempted(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getFreeThrowAttempted();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgTwoPointsMade(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getTwoPointsMade();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgTwoPointsAttempted(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getTwoPointsAttempted();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgThreePointsMade(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getThreePointsMade();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgThreePointsAttempted(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getThreePointsAttempted();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgRebounds(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getRebounds();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgBlocks(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getBlocks();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgAssists(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getAssists();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgSteals(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getSteals();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double avgTurnovers(List<StandardStats> standardStatsList) {
-        int value = 0;
-        for (StandardStats s : standardStatsList) {
-            value += s.getTurnovers();
-        }
-        return (double) value/standardStatsList.size();
-    }
-
-    public double freeThrowPercentage(List<StandardStats> standardStatsList) {
-        return avgFreeThrowMade(standardStatsList)/avgFreeThrowAttempted(standardStatsList)*100;
-    }
-
-    public double twoPointsPercentage(List<StandardStats> standardStatsList) {
-        return avgTwoPointsMade(standardStatsList)/avgTwoPointsAttempted(standardStatsList)*100;
-    }
-
-    public double threePointsPercentage(List<StandardStats> standardStatsList) {
-        return avgThreePointsMade(standardStatsList)/avgThreePointsAttempted(standardStatsList)*100;
-    }
-
-    public double points(List<StandardStats> standardStatsList) {
-        return avgFreeThrowMade(standardStatsList)
-                + 2 * avgTwoPointsMade(standardStatsList)
-                + 3 * avgThreePointsMade(standardStatsList);
-    }
-
-    public double volarization(List<StandardStats> standardStatsList) {
-        return (avgFreeThrowMade(standardStatsList)
-                + 2 * avgTwoPointsMade(standardStatsList)
-                + 3 * avgThreePointsMade(standardStatsList)
-                + avgRebounds(standardStatsList)
-                + avgBlocks(standardStatsList)
-                + avgAssists(standardStatsList)
-                + avgSteals(standardStatsList))
-                -
-                (
-                    avgFreeThrowAttempted(standardStatsList)
-                        - avgFreeThrowMade(standardStatsList)
-                        + avgTwoPointsAttempted(standardStatsList)
-                        - avgTwoPointsMade(standardStatsList)
-                        + avgThreePointsAttempted(standardStatsList)
-                        - avgThreePointsMade(standardStatsList)
-                        + avgTurnovers(standardStatsList)
-
-                );
-    }
-
-    public double effectiveFieldGoalPercentage(List<StandardStats> standardStatsList) {
-        return ((avgTwoPointsMade(standardStatsList)
-                + avgThreePointsMade(standardStatsList)
-                + 0.5
-                * avgThreePointsMade(standardStatsList))
-                / (avgTwoPointsAttempted(standardStatsList) + avgThreePointsAttempted(standardStatsList)) * 100);
-    }
-
-    public double trueShootingPercentage(List<StandardStats> standardStatsList) {
-        return points(standardStatsList) / (2 * ((avgTwoPointsAttempted(standardStatsList) + avgThreePointsAttempted(standardStatsList))
-                + 0.475 * avgFreeThrowAttempted(standardStatsList))) * 100;
-    }
-
-    public double hollingerAssistRatio(List<StandardStats> standardStatsList) {
-        return avgAssists(standardStatsList) / (avgTwoPointsAttempted(standardStatsList)
-                + avgThreePointsAttempted(standardStatsList)
-                + 0.475
-                * avgFreeThrowAttempted(standardStatsList)
-                + avgAssists(standardStatsList)
-                + avgTurnovers(standardStatsList)) * 100;
-    }
-
-
 
     @Transactional
     public void saveAllPlayerStatsFromCsvFile() {
