@@ -67,7 +67,7 @@ Tehnologije koje su korišćene u projektu su:
 - Maven: alat za izgradnju projekta i upravljanje zavisnicama
 - H2 baza podataka: in-memory baza podataka.
 - Lambok: biblioteka zasnovana na anotacijama za kraće pisanje getera, setera i konstruktora
-- OpenCSV: biblioteka za lakše upravljanje CSV fajlovima. Pojednostavljuje proce čitanja/pisanja CSV podataka.
+- OpenCSV: biblioteka za lakše upravljanje CSV fajlovima. Pojednostavljuje proces čitanja/pisanja CSV podataka.
 - Jakarta JSON API (JSON Processing): koristi se za rad sa JSON podacima u projektu.
 - Yasson: biblioteka koja implementira Jakarta JSON Binding API. Konvertovanje Java objekta u/iz JSON formata.
 
